@@ -1,0 +1,209 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "certbot.fullname" . }}
+  labels:
+{{ include "certbot.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "certbot.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "certbot.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ template "certbot.serviceAccountName" . }}
+      volumes:
+        - name: {{ default "fixme" .Values.certbotProtocolShare.cbProtocolVolumeName | quote }}
+          emptyDir: {}
+        - name: {{ default "fixme" .Values.certbotStateShare.cbStateVolumeName | quote }}
+          persistentVolumeClaim:
+            claimName: {{ default "fixme" .Values.certbotStateShare.cbStateVolumeClaimName | quote }}
+      initContainers:
+        - name: {{ .Chart.Name }}-init-www
+          image: '{{ .Values.certbotInitImage.repository }}:{{ .Values.certbotInitImage.tag }}'
+          imagePullPolicy: IfNotPresent
+          command:
+            - "/assets/certbot-init-www.sh"
+          volumeMounts:
+            # emphemeral state for certificate issuance protocol
+            - name: {{ default "fixme" .Values.certbotProtocolShare.cbProtocolVolumeName | quote }}
+              mountPath: {{ "/usr/share/nginx/html" | quote }}
+        - name: {{ .Chart.Name }}-developer-certificate
+          image: '{{ .Values.certbotInitImage.repository }}:{{ .Values.certbotInitImage.tag }}'
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: 'HOST_BINDING'
+              value: '{{ .Values.certBot.hostBinding }}'
+            - name: 'RELEASE_NAMESPACE'
+              value: '{{ .Release.Namespace }}'
+            - name: 'RELEASE_NAME'
+              value: '{{ .Release.Name }}'
+            - name: 'ORGANIZATION'
+              value: '{{ .Values.certBot.organization }}'
+          command:
+            - "/assets/certbot-developer-certificate.sh"
+          volumeMounts:
+            # persistent state for certificate issuance
+            - name: {{ default "fixme" .Values.certbotStateShare.cbStateVolumeName | quote }}
+              mountPath: {{ "/etc/letsencrypt" | quote }}
+        - name: {{ .Chart.Name }}-wait-for-loadbalancer
+          image: '{{ .Values.certbotInitImage.repository }}:{{ .Values.certbotInitImage.tag }}'
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: 'HOST_FQDN'
+              value: '{{ .Values.certBot.hostFqdn }}'
+            - name: 'RELEASE_NAMESPACE'
+              value: '{{ .Release.Namespace }}'
+            - name: 'RELEASE_NAME'
+              value: '{{ .Release.Name }}'
+            - name: 'PRIVATE_TLS'
+              value: '{{ default "false" .Values.certBot.privateTLS }}'
+          command:
+            - "/assets/certbot-wait-for-loadbalancer.sh"
+      containers:
+#
+# container for letsEncrypt
+#
+        - name: "{{ .Chart.Name }}-lets-encrypt"
+          image: "{{ .Values.certbotImage.repository }}:{{ .Values.certbotImage.tag }}"
+          imagePullPolicy: {{ .Values.certbotImage.pullPolicy }}
+          env:
+            - name: IS_PRODUCTION
+              value: '{{ default "staging" .Values.certBot.environment }}'
+            - name: 'PRIVATE_TLS'
+              value: '{{ default "false" .Values.certBot.privateTLS }}'
+            - name: HOST_DOMAIN  # @@ tech debt -- change to reflect actual usage
+              value: '{{ .Values.certBot.hostFqdn }}'
+            - name: ADMIN_EMAIL
+              value: '{{ .Values.certBot.dnsAdminEmail }}'
+          command:
+            - "/assets/wrapper.sh"
+          volumeMounts:
+            # persistent state for certificate issuance
+            - name: {{ default "fixme" .Values.certbotStateShare.cbStateVolumeName | quote }}
+              mountPath: {{ "/etc/letsencrypt" | quote }}
+            # ephemeral state for certificate issuance protocol
+            - name: {{ default "fixme" .Values.certbotProtocolShare.cbProtocolVolumeName | quote }}
+              mountPath: {{ "/data/letsencrypt" | quote }}
+          livenessProbe:
+            exec:
+              command:
+                - echo
+                - "certbot is alive"
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 12
+          readinessProbe:
+            exec:
+              command:
+                - 'echo'
+                - 'certbot is running'
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 12
+          resources:
+            {{ toYaml .Values.certbotImage.resources | indent 12 }}
+
+#
+# container for WWW ephemeral protocol for letsEncrypt
+#
+        - name: "{{ .Chart.Name }}-ephemeral"
+          image: "{{ .Values.nginxImage.repository }}:{{ .Values.nginxImage.tag }}"
+          imagePullPolicy: {{ .Values.nginxImage.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            # ephemeral state for certificate issuance protocol
+            - name: {{ default "fixme" .Values.certbotProtocolShare.cbProtocolVolumeName | quote }}
+              mountPath: {{ "/usr/share/nginx/html" | quote }}
+          livenessProbe:
+            exec:
+              command:
+                - 'echo'
+                - 'nginx-certbot is alive'
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 12
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 12
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+#
+# container to publish TLS certificate to K8S secret used by ingress
+#
+        - name: "{{ .Chart.Name }}-tls-publisher"
+          image: '{{ .Values.certbotInitImage.repository }}:{{ .Values.certbotInitImage.tag }}'
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: 'HOST_BINDING'
+              value: '{{ .Values.certBot.hostBinding }}'
+            - name: 'RELEASE_NAMESPACE'
+              value: '{{ .Release.Namespace }}'
+            - name: 'RELEASE_NAME'
+              value: '{{ .Release.Name }}'
+            - name: 'PRIVATE_TLS'
+              value: {{ default "false" .Values.certBot.privateTLS | quote }}
+          command:
+            - "/assets/certbot-tls-publisher.sh"
+          volumeMounts:
+            # persistent state for certificate issuance
+            - name: {{ default "fixme" .Values.certbotStateShare.cbStateVolumeName | quote }}
+              mountPath: {{ "/etc/letsencrypt" | quote }}
+          livenessProbe:
+            exec:
+              command:
+                - 'echo'
+                - 'TLS Certificate publisher is alive'
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 12
+          readinessProbe:
+            exec:
+              command:
+                - '/assets/certbot-readiness.sh'
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 12
+          resources:
+            {{ toYaml .Values.nginxImage.resources | indent 12 }}
+
+            {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

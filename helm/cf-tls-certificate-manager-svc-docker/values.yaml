@@ -15,16 +15,30 @@ fullnameOverride: ""
 config:
   # placeholder values should allow the service to install and minimally respond
   environment:
-    TEST_HOST_URL: 'fixme-placeholder-cf-tls-certificate-manager-test-host-url'
-    SERVICE_PRINCIPAL_CLIENT_ID: 'fixme-placeholder-cf-tls-certificate-manager-service-principal-client-id'
-    SERVICE_PRINCIPAL_TENANT_ID: 'fixme-placeholder-cf-tls-certificate-manager-service-principal-tenant-id'
-    SERVICE_PRINCIPAL_RESOURCE: 'fixme-placeholder-passage-application-id'
+    ADMIN_EMAIL: 'techguru@byiq.com'
     APP_VERSION: '{{ .Chart.AppVersion }}'
+    CERTIFICATE_CREATED_FLAG: "${CERTIFICATE_DIR}/certificate_created.flag"
+    CERTIFICATE_DIR: '/etc/letsencrypt'
+    CERTIFICATE_NAME: "${RELEASE_NAME}"
+    CERTIFICATE_ORG: 'Acuity Brands, Inc.'
+    DEV_CERTIFICATE_DIR: "${CERTIFICATE_DIR}/dev-cert"
+    DEVELOPER_CERTIFICATE_REQUIRED_FLAG: "${CERTIFICATE_DIR}/developer_certificate_required.flag"
+    HOST_DOMAIN: 'cf.dev.atrius-iot.com'
+    IS_PRODUCTION: 'false'
+    PRIVATE_TLS: 'false'
+    RELEASE_NAME: 'cf-dev'
+    RELEASE_NAMESPACE: 'cfk8s'
+    RENEWAL_FAILED_FLAG: "${CERTIFICATE_DIR}/renewal_failed.flag"
+    TLS_SECRET_NAME: 'waf-tls-secret'
   secrets:
-    JWT_AUTH_TOKEN: 'fixme-placeholder-cf-tls-certificate-manager-jwt-auth-token'
-    CF_DISTECH_LIGHTSMAP_API_KEY: 'fixme-placeholder-cf-tls-certificate-manager-distech-lightsmap-api-key'
-    CF_SELF_HEALING_API_KEY: 'fixme-placeholder-cf-tls-certificate-manager-self-healing-api-key'
-    SERVICE_PRINCIPAL_SECRET: 'fixme-placeholder-cf-tls-certificate-manager-service-principal-secret'
+    TLS_PEM: ''
+
+certbot:
+  protocol:
+    volumeName: "certbot-protocol"
+  state:
+    volumeClaimName: "certbot-state-pvc"
+    volumeName: "certbot-state"
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -55,6 +69,19 @@ ingress:
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+ingress_well_known:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+  # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
       paths: []

@@ -38,7 +38,7 @@ set -o pipefail
 # ---------------------
 declare -rx STATSD_HOST
 declare -rx STATSD_PORT
-declare -rx METRICS_PREFIX cf.service.cf_tls_certificate_manager.
+declare -rx METRICS_PREFIX
 
 # Arguments
 # ---------------------

@@ -100,10 +100,12 @@ function verify_ip () {
     grep -e '^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
 }
 
+function verify_loadbalancer_ip () {
+    get_loadbalancer_ip | verify_ip
+}
+
 function verify_loadbalancer () {
-    verify_ingress_domain && return 0
-    get_loadbalancer_ip | verify_ip && return 0
-    return 1
+    [[ verify_ingress_domain ]] || [[ verify_loadbalancer_ip ]]
 }
 
 function wait_for_loadbalancer {

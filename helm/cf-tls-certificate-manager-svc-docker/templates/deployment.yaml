@@ -1,0 +1,234 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cf-tls-certificate-manager-svc-docker.fullname" . }}
+  labels:
+    {{- include "cf-tls-certificate-manager-svc-docker.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "cf-tls-certificate-manager-svc-docker.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "cf-tls-certificate-manager-svc-docker.selectorLabels" . | nindent 8 }}
+      {{- if ( or .Values.config.environment .Values.config.secrets ) }}
+      annotations:
+        {{- if .Values.config.environment }}
+        checksum/environment: {{ tpl (toYaml .Values.config.environment) . | sha256sum }}
+        {{- end }}
+        {{- if .Values.config.secrets }}
+        checksum/secrets: {{ tpl (toYaml .Values.config.secrets) . | sha256sum }}
+        {{- end }}
+      {{- end }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "cf-tls-certificate-manager-svc-docker.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: {{ default "fixme" .Values.certbot.protocol.volumeName | quote }}
+          emptyDir: {}
+        - name: {{ default "fixme" .Values.certbot.state.volumeName | quote }}
+          emptyDir: {}
+          #persistentVolumeClaim:
+          #  claimName: {{ default "fixme" .Values.certbot.state.volumeClaimName| quote }}
+      initContainers:
+        - name: '{{ .Chart.Name }}-init-www'
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: STATSD_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: STATSD_PORT
+              value: "8125"
+          envFrom:
+            - configMapRef:
+                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-env'
+            - secretRef:
+                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-senv'
+          command:
+            - '/assets/certbot_init_www.sh'
+          volumeMounts:
+            # emphemeral state for certificate issuance protocol
+            - name: {{ default "fixme" .Values.certbot.protocol.volumeName | quote }}
+              mountPath: {{ "/usr/share/nginx/html" | quote }}
+        - name: '{{ .Chart.Name }}-developer-certificate'
+          securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: STATSD_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: STATSD_PORT
+              value: "8125"
+          envFrom:
+            - configMapRef:
+                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-env'
+            - secretRef:
+                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-senv'
+          command:
+            - '/assets/certbot_developer_certificate.sh'
+          volumeMounts:
+            # persistent state for certificate issuance
+            - name: {{ default "fixme" .Values.certbot.state.volumeName | quote }}
+              mountPath: {{ "/etc/letsencrypt" | quote }}
+        - name: '{{ .Chart.Name }}-wait-for-load-balancer'
+          securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: STATSD_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: STATSD_PORT
+              value: "8125"
+          envFrom:
+            - configMapRef:
+                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-env'
+            - secretRef:
+                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-senv'
+          command:
+            - '/assets/certbot_wait_for_loadbalancer.sh'
+      containers:
+        - name: '{{ .Chart.Name }}-ephemeral'
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "nginx:stable-alpine"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: STATSD_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: STATSD_PORT
+              value: "8125"
+          envFrom:
+            - configMapRef:
+                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-env'
+            - secretRef:
+                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-senv'
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            # ephemeral state for certificate issuance protocol
+            - name: {{ default "fixme" .Values.certbot.protocol.volumeName | quote }}
+              mountPath: {{ "/usr/share/nginx/html" | quote }}
+          livenessProbe:
+            exec:
+              command:
+                - 'echo'
+                - 'nginx-certbot is alive'
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+        - name: '{{ .Chart.Name }}-certbot'
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: STATSD_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: STATSD_PORT
+              value: "8125"
+          envFrom:
+            - configMapRef:
+                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-env'
+            - secretRef:
+                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-senv'
+          command:
+            - '/assets/certbot_issuer_loop.sh'
+          volumeMounts:
+            # persistent state for certificate issuance
+            - name: {{ default "fixme" .Values.certbot.state.volumeName | quote }}
+              mountPath: {{ "/etc/letsencrypt" | quote }}
+            # ephemeral state for certificate issuance protocol
+            - name: {{ default "fixme" .Values.certbot.protocol.volumeName | quote }}
+              mountPath: {{ "/data/letsencrypt" | quote }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - echo
+                - "certbot is alive"
+          readinessProbe:
+            exec:
+              command:
+                - 'echo'
+                - 'certbot is running'
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+        - name: '{{ .Chart.Name }}-tls-publisher'
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: STATSD_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: STATSD_PORT
+              value: "8125"
+          envFrom:
+            - configMapRef:
+                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-env'
+            - secretRef:
+                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-senv'
+          command:
+            - '/assets/certbot_tls_publisher.sh'
+          volumeMounts:
+            # persistent state for certificate issuance
+            - name: {{ default "fixme" .Values.certbot.protocol.volumeName | quote }}
+              mountPath: {{ "/etc/letsencrypt" | quote }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - 'echo'
+                - 'TLS Certificate publisher is alive'
+          readinessProbe:
+            exec:
+              command:
+                - '/assets/certbot_readiness.sh'
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

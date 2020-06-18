@@ -57,17 +57,19 @@ function certbot_developer_certificate () {
     local -r crtFile="${CERTIFICATE_NAME}.crt"
     local -r keyFile="${CERTIFICATE_NAME}.key"
     local -r pemFile="${CERTIFICATE_NAME}.pem"
+    SECONDS=0
     #
     # create default certificate as a self-signed certificate for development
     #
 
     mkdir -p "${DEV_CERTIFICATE_DIR}"
-    pushdir "${DEV_CERTIFICATE_DIR}"
+    pushd "${DEV_CERTIFICATE_DIR}"
         openssl genrsa -out "${keyFile}" 4096
         openssl req -new -sha256 -key "${keyFile}" -subj "/C=US/ST=CA/O=${CERTIFICATE_ORG}/CN=$(certificate_domain)" -out "${csrFile}"
         openssl x509 -req -days 365 -in "${csrFile}" -signkey "${keyFile}" -out "${crtFile}" -extfile <(printf 'subjectAltName=DNS:%s,IP:%s' "$(certificate_domain)" "$(certificate_ip)")
         cat "${crtFile}" "${keyFile}" > "${pemFile}"
-    popdir
+    popd
+    /assets/metrics_report.sh "${FUNCNAME[0]}" "${SECONDS}"
 }
 
 certbot_developer_certificate

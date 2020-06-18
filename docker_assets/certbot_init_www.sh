@@ -41,6 +41,7 @@ set -o pipefail
 # ---------------------
 
 function certbot_init_www () {
+    SECONDS=0
     chmod 755 "/usr/share/nginx/html";
     touch "/usr/share/nginx/html/index.html";
     chmod 644 "/usr/share/nginx/html/index.html";
@@ -48,6 +49,7 @@ function certbot_init_www () {
     echo "available" > "/usr/share/nginx/html/.well-known/.showme.html"
     mkdir -p "/usr/share/nginx/html/.test/"
     echo "available" > "/usr/share/nginx/html/.test/.showme.html"
+    /assets/metrics_report.sh "${FUNCNAME[0]}" "${SECONDS}"
 }
 
 certbot_init_www

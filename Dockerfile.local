@@ -14,6 +14,7 @@ ENV PRIVATE_TLS='false'
 ENV TLS_PEM=''
 ENV STATSD_HOST='localhost'
 ENV STATSD_PORT='8125'
+ENV METRICS_PREFIX="cf.service.cf_tls_certificate_manager."
 ENV IS_PRODUCTION='false'
 ENV TLS_SECRET_NAME='waf-tls-secret'
 

@@ -38,13 +38,14 @@ set -o pipefail
 # ---------------------
 declare -rx STATSD_HOST
 declare -rx STATSD_PORT
+declare -rx METRICS_PREFIX cf.service.cf_tls_certificate_manager.
 
 # Arguments
 # ---------------------
 
 function metrics_report {
-    local -r metric_tag="$1"
-    local -r metric_value="$2"
+    local -r metric_tag="${METRICS_PREFIX}${1}"
+    local -r metric_value="${2}"
     # placeholder
     echo "metric tag [${metric_tag}]=[${metric_value}]" > /dev/stderr
     if [[ -n "${STATSD_HOST}" ]]; then

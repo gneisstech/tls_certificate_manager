@@ -57,6 +57,10 @@ spec:
                 name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-senv'
           command:
             - '/assets/certbot_init_www.sh'
+          volumeMounts:
+            # emphemeral state for certificate issuance protocol
+            - name: {{ default "fixme" .Values.certbot.protocol.volumeName | quote }}
+              mountPath: {{ "/usr/share/nginx/html" | quote }}
         - name: '{{ .Chart.Name }}-developer-certificate'
           securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}
@@ -76,6 +80,10 @@ spec:
                 name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-senv'
           command:
             - '/assets/certbot_developer_certificate.sh'
+          volumeMounts:
+            # persistent state for certificate issuance
+            - name: {{ default "fixme" .Values.certbot.state.volumeName | quote }}
+              mountPath: {{ "/etc/letsencrypt" | quote }}
         - name: '{{ .Chart.Name }}-wait-for-load-balancer'
           securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}

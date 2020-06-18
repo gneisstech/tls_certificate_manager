@@ -122,4 +122,10 @@ function is_private_tls () {
     echo 'private TLS key is already published as a cluster secret'
 }
 
-is_private_tls || wait_for_loadbalancer
+function certbot_wait_for_loadbalancer () {
+    SECONDS=0
+    is_private_tls || wait_for_loadbalancer
+    /assets/metrics_report.sh "${FUNCNAME[0]}" "${SECONDS}"
+}
+
+certbot_wait_for_loadbalancer

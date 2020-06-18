@@ -1,8 +1,10 @@
-#!/bin/sh -
+#!/usr/bin/env bash
+# usage: renewed_certificates.sh
+
 #
 # Maintainer: techguru@byiq.com
 #
-# Copyright (c) 2017,  Cloud Git -- All Rights Reserved
+# Copyright (c) 2017-2020,  Cloud Git -- All Rights Reserved
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +25,24 @@
 # THE SOFTWARE.
 #
 
-set -e
+# Exit script if you try to use an uninitialized variable.
+set -o nounset
 
-echo renewed_certificates
-echo got_new_certificates
+# Exit script if a statement returns a non-true return value.
+set -o errexit
+
+# Use the error status of the first failure, rather than that of the last item in a pipeline.
+set -o pipefail
+
+# Environment Variables
+# ---------------------
+
+# Arguments
+# ---------------------
+
+function renewed_certificates () {
+    printf 'renewed_certificates\n'
+    printf 'got_new_certificates\n'
+}
+
+renewed_certificates

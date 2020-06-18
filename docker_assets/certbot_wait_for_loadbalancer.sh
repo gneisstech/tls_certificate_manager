@@ -1,4 +1,29 @@
 #!/usr/bin/env bash
+# usage: certbot_wait_for_loadbalancer.sh
+
+#
+# Maintainer: techguru@byiq.com
+#
+# Copyright (c) 2017-2020,  Cloud Git -- All Rights Reserved
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
 
 # Exit script if you try to use an uninitialized variable.
 set -o nounset
@@ -11,9 +36,8 @@ set -o pipefail
 
 # Environment Variables
 # ---------------------
-declare -rx HOST_FQDN
+declare -rx HOST_DOMAIN
 declare -rx RELEASE_NAMESPACE
-declare -rx RELEASE_NAME
 declare -rx PRIVATE_TLS
 
 # Arguments
@@ -22,7 +46,7 @@ declare -rx PRIVATE_TLS
 function get_ingress_service () {
     kubectl --namespace "${RELEASE_NAMESPACE}" \
         get service \
-        -l "component=controller,certbot=${HOST_FQDN}" \
+        -l "component=controller,certbot=${HOST_DOMAIN}" \
         -o json \
         2>/dev/null
 }
@@ -35,7 +59,7 @@ function filter_ingress_service_ip () {
     jq -r -e '.items[0].status.loadBalancer.ingress | .[].ip' 2>/dev/null || false
 }
 
-function ingress_fqdn () {
+function ingress_domain () {
     get_ingress_service | filter_ingress_service_hostname
 }
 
@@ -59,8 +83,8 @@ function domain_dns_ip_list () {
     echo "Examined domain: [${fqdn}]" > /dev/stderr
 }
 
-function intersect_host_fqdn_with_ingress_fqdn () {
-    comm -12 <(domain_dns_ip_list "${HOST_FQDN}") <(domain_dns_ip_list "$(ingress_fqdn)")
+function intersect_host_domain_with_ingress_domain () {
+    comm -12 <(domain_dns_ip_list "${HOST_DOMAIN}") <(domain_dns_ip_list "$(ingress_domain)")
 }
 
 function fail_empty_set () {
@@ -69,7 +93,7 @@ function fail_empty_set () {
 
 function verify_ingress_domain () {
     # returns false if the intersection of the two ip lists is empty set
-    intersect_host_fqdn_with_ingress_fqdn | tee /dev/stderr | fail_empty_set
+    intersect_host_domain_with_ingress_domain | tee /dev/stderr | fail_empty_set
 }
 
 function verify_ip () {

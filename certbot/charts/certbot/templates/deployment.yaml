@@ -41,7 +41,7 @@ spec:
           image: '{{ .Values.certbotInitImage.repository }}:{{ .Values.certbotInitImage.tag }}'
           imagePullPolicy: IfNotPresent
           env:
-            - name: 'HOST_BINDING'
+            - name: 'HOST_DOMAIN'
               value: '{{ .Values.certBot.hostBinding }}'
             - name: 'RELEASE_NAMESPACE'
               value: '{{ .Release.Namespace }}'
@@ -59,7 +59,7 @@ spec:
           image: '{{ .Values.certbotInitImage.repository }}:{{ .Values.certbotInitImage.tag }}'
           imagePullPolicy: IfNotPresent
           env:
-            - name: 'HOST_FQDN'
+            - name: 'HOST_DOMAIN'
               value: '{{ .Values.certBot.hostFqdn }}'
             - name: 'RELEASE_NAMESPACE'
               value: '{{ .Release.Namespace }}'
@@ -159,7 +159,7 @@ spec:
           image: '{{ .Values.certbotInitImage.repository }}:{{ .Values.certbotInitImage.tag }}'
           imagePullPolicy: IfNotPresent
           env:
-            - name: 'HOST_BINDING'
+            - name: 'HOST_DOMAIN'
               value: '{{ .Values.certBot.hostBinding }}'
             - name: 'RELEASE_NAMESPACE'
               value: '{{ .Release.Namespace }}'

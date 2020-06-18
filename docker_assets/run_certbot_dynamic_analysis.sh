@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# usage: migrate_and_run_ruby_app.sh
+# usage: run_certbot_dynamic_analysis.sh
 
 # Exit script if you try to use an uninitialized variable.
 set -o nounset
@@ -12,14 +12,12 @@ set -o pipefail
 
 # Environment Variables
 # ---------------------
-declare -rx RAILS_ENV
-declare -rx APPSETTING_RAILS_ENV
 
 # Arguments
 # ---------------------
 
-function migrate_and_run_ruby_app () {
-    /assets/run_ruby_migrations.sh && /assets/run_ruby_app.sh
+function run_certbot_dynamic_analysis () {
+    true
 }
 
-migrate_and_run_ruby_app
+run_certbot_dynamic_analysis

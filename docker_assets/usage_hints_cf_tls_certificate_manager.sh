@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# usage: docker_install.sh
+# usage: usage_hints_cf_tls_certificate_manager.sh
 
 #
 # Maintainer: techguru@byiq.com
@@ -40,28 +40,23 @@ set -o pipefail
 # Arguments
 # ---------------------
 
-function install_base_tools () {
-    apk --no-cache add \
-        bash \
-        bind-tools \
-        curl \
-        jq \
-        netcat-openbsd \
-        openssl \
-        shellcheck
+function usage_hints_cf_tls_certificate_manager () {
+    printf 'USAGE: docker run {container_id} -- /assets/{entry_point}\n'
+    printf '       where {entry_point} is any one of the following:\n'
+    printf '          certbot_developer_certificate.sh\n'
+    printf '          certbot_init_www.sh\n'
+    printf '          certbot_issuer_loop.sh\n'
+    printf '          certbot_readiness.sh\n'
+    printf '          certbot_tls_publisher.sh\n'
+    printf '          certbot_wait_for_loadbalancer.sh\n'
+    printf '          docker_install.sh\n'
+    printf '          health_check_cloud_git_certbot.sh\n'
+    printf '          metrics_report.sh\n'
+    printf '          post_renewal_attempt.sh\n'
+    printf '          pre_renewal_attempt.sh\n'
+    printf '          renewed_certificates.sh\n'
+    printf '          run_certbot_dynamic_analysis.sh\n'
+    printf '          run_certbot_static_analysis.sh\n'
 }
 
-function install_kubectl () {
-    local -r kube_latest_version="v1.17.7"
-    curl -L \
-        https://storage.googleapis.com/kubernetes-release/release/${kube_latest_version}/bin/linux/amd64/kubectl \
-        -o /usr/local/bin/kubectl
-    chmod +x /usr/local/bin/kubectl
-}
-
-function docker_install () {
-    install_base_tools
-    install_kubectl
-}
-
-docker_install
+usage_hints_cf_tls_certificate_manager

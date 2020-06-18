@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# usage: docker_install.sh
+# usage: certbot_developer_certificate.sh
 
 #
 # Maintainer: techguru@byiq.com
@@ -36,32 +36,38 @@ set -o pipefail
 
 # Environment Variables
 # ---------------------
+declare -rx HOST_DOMAIN
+declare -rx DEV_CERTIFICATE_DIR
+declare -rx CERTIFICATE_ORG
+declare -rx CERTIFICATE_NAME
 
 # Arguments
 # ---------------------
 
-function install_base_tools () {
-    apk --no-cache add \
-        bash \
-        bind-tools \
-        curl \
-        jq \
-        netcat-openbsd \
-        openssl \
-        shellcheck
+function certificate_domain () {
+    echo "${HOST_DOMAIN}" | awk 'BEGIN {FS=":"} /^[0-9]+/ { print $1".xip.io" } /^[^0-9]+/ { print $1 }'
 }
 
-function install_kubectl () {
-    local -r kube_latest_version="v1.17.7"
-    curl -L \
-        https://storage.googleapis.com/kubernetes-release/release/${kube_latest_version}/bin/linux/amd64/kubectl \
-        -o /usr/local/bin/kubectl
-    chmod +x /usr/local/bin/kubectl
+function certificate_ip () {
+    echo "${HOST_DOMAIN}" | awk 'BEGIN {FS=":"} /^[0-9]+/ { print $1 } /^[^0-9]+/ { print "0.0.0.0" }'
 }
 
-function docker_install () {
-    install_base_tools
-    install_kubectl
+function certbot_developer_certificate () {
+    local -r csrFile="${CERTIFICATE_NAME}.csr"
+    local -r crtFile="${CERTIFICATE_NAME}.crt"
+    local -r keyFile="${CERTIFICATE_NAME}.key"
+    local -r pemFile="${CERTIFICATE_NAME}.pem"
+    #
+    # create default certificate as a self-signed certificate for development
+    #
+
+    mkdir -p "${DEV_CERTIFICATE_DIR}"
+    pushdir "${DEV_CERTIFICATE_DIR}"
+        openssl genrsa -out "${keyFile}" 4096
+        openssl req -new -sha256 -key "${keyFile}" -subj "/C=US/ST=CA/O=${CERTIFICATE_ORG}/CN=$(certificate_domain)" -out "${csrFile}"
+        openssl x509 -req -days 365 -in "${csrFile}" -signkey "${keyFile}" -out "${crtFile}" -extfile <(printf 'subjectAltName=DNS:%s,IP:%s' "$(certificate_domain)" "$(certificate_ip)")
+        cat "${crtFile}" "${keyFile}" > "${pemFile}"
+    popdir
 }
 
-docker_install
+certbot_developer_certificate

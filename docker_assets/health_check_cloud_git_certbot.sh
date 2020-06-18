@@ -1,8 +1,10 @@
-#!/bin/sh -
+#!/usr/bin/env bash
+# usage: health_check_cloud_git_certbot.sh
+
 #
 # Maintainer: techguru@byiq.com
 #
-# Copyright (c) 2017,  Cloud Git -- All Rights Reserved
+# Copyright (c) 2017-2020,  Cloud Git -- All Rights Reserved
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +25,25 @@
 # THE SOFTWARE.
 #
 
-set -e
+# Exit script if you try to use an uninitialized variable.
+set -o nounset
 
-CERTDIR=/etc/letsencrypt
-CERTIFICATES_CREATED=$CERTDIR/certificates_created.flag
-RENEW_FAILED=$CERTDIR/renew_failed.flag
+# Exit script if a statement returns a non-true return value.
+set -o errexit
 
-if [ ! -e $CERTIFICATES_CREATED ]
-then
-    exit 1
-fi
+# Use the error status of the first failure, rather than that of the last item in a pipeline.
+set -o pipefail
 
-if [ -e $RENEW_FAILED ]
-then
-    exit 1
-fi
-exit 0
+# Environment Variables
+# ---------------------
+declare -rx CERTIFICATE_CREATED_FLAG
+declare -rx RENEWAL_FAILED_FLAG
+
+# Arguments
+# ---------------------
+
+function health_check_cloud_git_certbot () {
+    [[ -e "${CERTIFICATE_CREATED_FLAG}" ]] && [[ ! -e "${RENEWAL_FAILED_FLAG}" ]]
+}
+
+health_check_cloud_git_certbot

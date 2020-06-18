@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# usage: docker_install.sh
+# usage: certbot_readiness.sh
 
 #
 # Maintainer: techguru@byiq.com
@@ -36,32 +36,15 @@ set -o pipefail
 
 # Environment Variables
 # ---------------------
+declare -rx RENEWAL_FAILED_FLAG
+declare -rx DEVELOPER_CERTIFICATE_REQUIRED_FLAG
 
 # Arguments
 # ---------------------
 
-function install_base_tools () {
-    apk --no-cache add \
-        bash \
-        bind-tools \
-        curl \
-        jq \
-        netcat-openbsd \
-        openssl \
-        shellcheck
+function certbot_readiness () {
+    printf 'TLS publisher is running\n'
+    [[ -e "${DEVELOPER_CERTIFICATE_REQUIRED_FLAG}" ]] || [[ ! -e "${RENEWAL_FAILED_FLAG}" ]]
 }
 
-function install_kubectl () {
-    local -r kube_latest_version="v1.17.7"
-    curl -L \
-        https://storage.googleapis.com/kubernetes-release/release/${kube_latest_version}/bin/linux/amd64/kubectl \
-        -o /usr/local/bin/kubectl
-    chmod +x /usr/local/bin/kubectl
-}
-
-function docker_install () {
-    install_base_tools
-    install_kubectl
-}
-
-docker_install
+certbot_readiness

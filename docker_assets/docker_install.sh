@@ -59,9 +59,15 @@ function install_kubectl () {
     chmod +x /usr/local/bin/kubectl
 }
 
+function create_mount_points () {
+    mkdir -p /etc/letsencrypt
+    mkdir -p /data/letsencrypt
+}
+
 function docker_install () {
     install_base_tools
     install_kubectl
+    create_mount_points
 }
 
 docker_install

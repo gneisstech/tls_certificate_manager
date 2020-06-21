@@ -93,7 +93,7 @@ function wait_for_server_availability () {
     until is_our_server_available; do
         sleep 30
         if ! is_our_server_available; then
-            printf '... still waiting for our server ...\n'
+            printf '... still waiting for our server @[%s] seconds...\n' "${SECONDS}"
         fi
     done
 }

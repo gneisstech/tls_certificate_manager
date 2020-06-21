@@ -51,6 +51,9 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name:
 
+rbac:
+  create: true
+
 podSecurityContext: {}
   # fsGroup: 2000
 

@@ -45,6 +45,7 @@ declare -rx CERTIFICATE_NAME
 declare -rx CERTIFICATE_CREATED_FLAG
 declare -rx RENEWAL_FAILED_FLAG
 declare -rx DEVELOPER_CERTIFICATE_REQUIRED_FLAG
+declare -rx ACTIVE_TLS_PUBLISH
 
 # Arguments
 # ---------------------
@@ -90,9 +91,13 @@ function restart_ingress_resources () {
 function publish_tls_secret () {
     tlsKeyFile="${1}"
     tlsCertFile="${2}"
-    kubectl --namespace "${RELEASE_NAMESPACE}" delete secret "${TLS_SECRET_NAME}" || true
-    kubectl --namespace "${RELEASE_NAMESPACE}" create secret tls "${TLS_SECRET_NAME}" --key "${tlsKeyFile}" --cert "${tlsCertFile}"
-    restart_ingress_resources
+    if [[ "${ACTIVE_TLS_PUBLISH}" == "true" ]]; then
+        kubectl --namespace "${RELEASE_NAMESPACE}" delete secret "${TLS_SECRET_NAME}" || true
+        kubectl --namespace "${RELEASE_NAMESPACE}" create secret tls "${TLS_SECRET_NAME}" --key "${tlsKeyFile}" --cert "${tlsCertFile}"
+        restart_ingress_resources
+    else
+        printf 'Bypassing active tls publishing due to environment flag "ACTIVE_TLS_PUBLISH" \n'
+    fi
 }
 
 function publish_dev_tls () {
@@ -157,4 +162,5 @@ function certbot_tls_publisher () {
     tail -f /dev/null   # pause so that we can inspect container contents
 }
 
+set -x
 certbot_tls_publisher   # does not return

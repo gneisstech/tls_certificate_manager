@@ -15,6 +15,7 @@ fullnameOverride: ""
 config:
   # placeholder values should allow the service to install and minimally respond
   environment:
+    ACTIVE_TLS_PUBLISH: 'false'
     ADMIN_EMAIL: 'techguru@byiq.com'
     APP_VERSION: '{{ .Chart.AppVersion }}'
     CERTIFICATE_CREATED_FLAG: "/etc/letsencrypt/certificate_created.flag"

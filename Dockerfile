@@ -6,6 +6,7 @@ ADD ./docker_assets/* /assets/
 WORKDIR /assets
 RUN apk add --no-cache bash curl && ./docker_install.sh
 
+ENV ACTIVE_TLS_PUBLISH='false'
 ENV ADMIN_EMAIL='techguru@byiq.com'
 ENV HOST_DOMAIN='cf.dev.atrius-iot.com'
 ENV RELEASE_NAMESPACE='cfk8s'

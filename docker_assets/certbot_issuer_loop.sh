@@ -41,6 +41,7 @@ declare -rx RENEWAL_FAILED_FLAG
 declare -rx HOST_DOMAIN
 declare -rx ADMIN_EMAIL
 declare -rx IS_PRODUCTION
+declare -rx WEBROOT_DIR
 
 # Arguments
 # ---------------------
@@ -66,7 +67,7 @@ function certbot_new_certificates () {
             -n \
             "$(staging_flag)" \
             --webroot \
-            --webroot-path /data/letsencrypt \
+            --webroot-path "${WEBROOT_DIR}" \
             -d "$(certificate_domain)" \
             -m "${ADMIN_EMAIL}" \
             --agree-tos

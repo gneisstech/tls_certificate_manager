@@ -48,7 +48,7 @@ function get_ingress_service () {
         get service \
         -l "component=controller,certbot=${HOST_DOMAIN}" \
         -o json \
-        2>/dev/null
+        2> /dev/null
 }
 
 function filter_ingress_service_hostname () {

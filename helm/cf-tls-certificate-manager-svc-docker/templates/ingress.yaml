@@ -22,9 +22,9 @@ spec:
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
-      {{- end }}
+        {{- end }}
       secretName: {{ .secretName }}
-  {{- end }}
+    {{- end }}
   {{- end }}
   rules:
     {{- range .Values.ingress.hosts }}
@@ -36,6 +36,6 @@ spec:
             backend:
               serviceName: {{ $fullName }}
               servicePort: {{ $svcPort }}
-  {{- end }}
-  {{- end }}
+          {{- end }}
+    {{- end }}
   {{- end }}

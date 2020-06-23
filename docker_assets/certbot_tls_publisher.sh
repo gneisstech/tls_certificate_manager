@@ -150,11 +150,11 @@ function publish_public_tls () {
 }
 
 function certbot_tls_publisher () {
-    if ( certificate_domain | grep "xip.io" ); then
+    if [[ "${PRIVATE_TLS:-false}" == "true" ]]; then
+        echo "private TLS key is already published as a cluster secret"
+    elif ( certificate_domain | grep "xip.io" ); then
         touch "${DEVELOPER_CERTIFICATES_REQUIRED}"
         publish_dev_tls;
-    elif [[ "${PRIVATE_TLS:-false}" == "true" ]]; then
-        echo "private TLS key is already published as a cluster secret"
     else
         publish_public_tls;
     fi

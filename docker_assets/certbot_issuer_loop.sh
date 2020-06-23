@@ -129,6 +129,8 @@ function wait_for_certificate_renewal () {
 
 function certbot_issuer_loop () {
     trap "sigterm_handler; exit" TERM
+    ls -la /assets > /dev/stderr
+    whoami > /dev/stderr
     wait_for_server_availability
     wait_for_certificate_creation   # exit for SIGTERM or certificate creation
     wait_for_certificate_renewal    # does not exit until SIGTERM

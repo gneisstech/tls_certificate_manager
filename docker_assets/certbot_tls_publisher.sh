@@ -97,6 +97,7 @@ function publish_tls_secret () {
         restart_ingress_resources
     else
         printf 'Bypassing active tls publishing due to environment flag "ACTIVE_TLS_PUBLISH" \n'
+        sleep 120
     fi
 }
 

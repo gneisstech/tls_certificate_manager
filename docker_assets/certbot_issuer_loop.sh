@@ -61,26 +61,27 @@ function sigterm_handler () {
 }
 
 function certbot_new_certificates () {
-    echo "creating new certificates at [$(date)] : container started at [$(stat -c "%z" /proc/1/cmdline)]"
-    (
-        certbot certonly \
+    local -r certbot_cmd="certbot \
+            certonly \
             -n \
-            "$(staging_flag)" \
+            $(staging_flag) \
             --webroot \
-            --webroot-path "${WEBROOT_DIR}" \
-            -d "$(certificate_domain)" \
-            -m "${ADMIN_EMAIL}" \
-            --agree-tos
-    ) && touch "${CERTIFICATE_CREATED_FLAG}"
+            --webroot-path ${WEBROOT_DIR} \
+            -d $(certificate_domain) \
+            -m ${ADMIN_EMAIL} \
+            --agree-tos"
+    echo "creating new certificates at [$(date)] : container started at [$(stat -c "%z" /proc/1/cmdline)]"
+    echo "${certbot_cmd}"
+    $certbot_cmd && touch "${CERTIFICATE_CREATED_FLAG}"
 }
 
 function certbot_renew_certificates () {
     echo "checking if certificates need renewal at [$(date)] : container started at [$(stat -c "%z" /proc/1/cmdline)]"
     certbot renew \
         --rsa-key-size 4096 \
-        --pre-hook "pre_renewal_attempt.sh" \
-        --post-hook "post_renewal_attempt.sh" \
-        --renew-hook "renewed_certificates.sh"
+        --pre-hook "/assets/pre_renewal_attempt.sh" \
+        --post-hook "/assets/post_renewal_attempt.sh" \
+        --renew-hook "/assets/renewed_certificates.sh"
 }
 
 function is_our_server_available () {

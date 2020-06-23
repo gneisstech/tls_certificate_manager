@@ -105,7 +105,7 @@ function verify_loadbalancer_ip () {
 }
 
 function verify_loadbalancer () {
-    [[ verify_ingress_domain ]] || [[ verify_loadbalancer_ip ]]
+    verify_ingress_domain || verify_loadbalancer_ip
 }
 
 function wait_for_loadbalancer {

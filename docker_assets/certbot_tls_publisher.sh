@@ -64,9 +64,9 @@ function get_ingresses () {
 function patch_ingress () {
     if [[ $# != 3 ]]; then return 1; fi
 
-    local namespace="${1}"
-    local ingress_name="${2}"
-    local random_key="${3}"
+    local -r namespace="${1}"
+    local -r ingress_name="${2}"
+    local -r random_key="${3}"
 
     local patch_string
     patch_string="$( printf '{"metadata":{"labels":{"dummy":"%s"}}}' "${random_key}" )"
@@ -79,7 +79,7 @@ function patch_ingress () {
 # see: https://github.com/kubernetes/ingress-nginx/issues/947#issuecomment-314492913
 function restart_ingress_resources () {
     echo "restarting ingresses with new TLS certificate"
-    local random_key
+    local random_key namespace
     random_key="$(hexdump -n 27 -e '"%02X"'  /dev/urandom)"
     namespace="${RELEASE_NAMESPACE}"
 
@@ -89,8 +89,8 @@ function restart_ingress_resources () {
 }
 
 function publish_tls_secret () {
-    tlsKeyFile="${1}"
-    tlsCertFile="${2}"
+    local -r tlsKeyFile="${1}"
+    local -r tlsCertFile="${2}"
     if [[ "${ACTIVE_TLS_PUBLISH}" == "true" ]]; then
         kubectl --namespace "${RELEASE_NAMESPACE}" delete secret "${TLS_SECRET_NAME}" || true
         kubectl --namespace "${RELEASE_NAMESPACE}" create secret tls "${TLS_SECRET_NAME}" --key "${tlsKeyFile}" --cert "${tlsCertFile}"
@@ -103,16 +103,18 @@ function publish_tls_secret () {
 
 function publish_dev_tls () {
     echo "publishing self-signed developer certificates"
-    tlsKeyFile="${DEV_CERTIFICATE_DIR}/${CERTIFICATE_NAME}.key"
-    tlsCertFile="${DEV_CERTIFICATE_DIR}/${CERTIFICATE_NAME}.crt"
+    local -r tlsKeyFile="${DEV_CERTIFICATE_DIR}/${CERTIFICATE_NAME}.key"
+    local -r tlsCertFile="${DEV_CERTIFICATE_DIR}/${CERTIFICATE_NAME}.crt"
     publish_tls_secret "${tlsKeyFile}" "${tlsCertFile}"
 }
 
 function publish_certbot_tls_with_renew () {
-    tlsKeyFile=privkey.pem
-    tlsCertFile=fullchain.pem
+    local -r tlsKeyFile="privkey.pem"
+    local -r tlsCertFile="fullchain.pem"
 
+    local dnsCertificateDir
     dnsCertificateDir="/etc/letsencrypt/$(certificate_domain)"
+    local leCertificateDir
     leCertificateDir="/etc/letsencrypt/live/$(certificate_domain)"
 
     mkdir -p "${dnsCertificateDir}"

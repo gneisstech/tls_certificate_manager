@@ -165,5 +165,4 @@ function certbot_tls_publisher () {
     tail -f /dev/null   # pause so that we can inspect container contents
 }
 
-set -x
 certbot_tls_publisher   # does not return

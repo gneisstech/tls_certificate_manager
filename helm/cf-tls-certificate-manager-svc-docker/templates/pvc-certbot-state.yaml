@@ -1,0 +1,13 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: 'cf-az-files-certbot-state-pvc'
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: '10G'
+  storageClassName: 'manual-certbot'
+  volumeMode: 'Filesystem'
+  volumeName: 'cf-az-files-certbot-state-pv'

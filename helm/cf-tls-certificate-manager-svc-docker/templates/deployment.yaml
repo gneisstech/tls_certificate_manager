@@ -34,10 +34,8 @@ spec:
         - name: {{ default "fixme" .Values.certbot.protocol.volumeName | quote }}
           emptyDir: {}
         - name: {{ default "fixme" .Values.certbot.state.volumeName | quote }}
-          azureFile:
-            secretName: {{ default "fixme" .Values.certbot.state.secretName | quote }}
-            shareName: {{ default "fixme" .Values.certbot.state.shareName | quote }}
-            readOnly: false
+          persistentVolumeClaim:
+            claimName: 'cf-az-files-certbot-state-pvc'
       initContainers:
         - name: '{{ .Chart.Name }}-init-www'
           securityContext:

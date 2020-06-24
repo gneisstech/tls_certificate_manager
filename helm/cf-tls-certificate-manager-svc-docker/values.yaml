@@ -38,10 +38,11 @@ config:
 
 certbot:
   protocol:
-    volumeName: "certbot-protocol"
+    volumeName: 'certbot-protocol'
   state:
-    volumeClaimName: "certbot-state-pvc"
-    volumeName: "certbot-state"
+    secretName: 'cf-az-files-certbot-state'
+    shareName: 'certbot-state'
+    volumeName: 'certbot-state'
 
 serviceAccount:
   # Specifies whether a service account should be created

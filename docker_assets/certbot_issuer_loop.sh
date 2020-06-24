@@ -85,7 +85,7 @@ function certbot_renew_certificates () {
 }
 
 function is_our_server_available () {
-    curl --silent "http://${HOST_DOMAIN}/.well-known/.showme.html" | grep "available"
+    curl --silent "http://${HOST_DOMAIN}/.well-known/.showme.html" | grep "certbot-is-ready"
 }
 
 function wait_for_server_availability () {

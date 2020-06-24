@@ -46,9 +46,9 @@ declare -rx PRIVATE_TLS
 function get_ingress_service () {
     kubectl --namespace "${RELEASE_NAMESPACE}" \
         get service \
-        -l "component=controller,certbot=${HOST_DOMAIN}" \
+        -l "component=controller,app=cf-waf-ingress" \
         -o json \
-        2>/dev/null
+        2> /dev/null
 }
 
 function filter_ingress_service_hostname () {
@@ -97,7 +97,7 @@ function verify_ingress_domain () {
 }
 
 function verify_ip () {
-    grep -e '^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+    grep -E '^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
 }
 
 function verify_loadbalancer_ip () {
@@ -105,7 +105,7 @@ function verify_loadbalancer_ip () {
 }
 
 function verify_loadbalancer () {
-    [[ verify_ingress_domain ]] || [[ verify_loadbalancer_ip ]]
+     verify_loadbalancer_ip || verify_ingress_domain
 }
 
 function wait_for_loadbalancer {

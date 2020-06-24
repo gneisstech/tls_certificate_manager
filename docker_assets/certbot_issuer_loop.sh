@@ -41,6 +41,7 @@ declare -rx RENEWAL_FAILED_FLAG
 declare -rx HOST_DOMAIN
 declare -rx ADMIN_EMAIL
 declare -rx IS_PRODUCTION
+declare -rx WEBROOT_DIR
 
 # Arguments
 # ---------------------
@@ -60,30 +61,31 @@ function sigterm_handler () {
 }
 
 function certbot_new_certificates () {
-    echo "creating new certificates at [$(date)] : container started at [$(stat -c "%z" /proc/1/cmdline)]"
-    (
-        certbot certonly \
+    local -r certbot_cmd="certbot \
+            certonly \
             -n \
-            "$(staging_flag)" \
+            $(staging_flag) \
             --webroot \
-            --webroot-path /data/letsencrypt \
-            -d "$(certificate_domain)" \
-            -m "${ADMIN_EMAIL}" \
-            --agree-tos
-    ) && touch "${CERTIFICATE_CREATED_FLAG}"
+            --webroot-path ${WEBROOT_DIR} \
+            -d $(certificate_domain) \
+            -m ${ADMIN_EMAIL} \
+            --agree-tos"
+    echo "creating new certificates at [$(date)] : container started at [$(stat -c "%z" /proc/1/cmdline)]"
+    echo "${certbot_cmd}"
+    $certbot_cmd && touch "${CERTIFICATE_CREATED_FLAG}"
 }
 
 function certbot_renew_certificates () {
     echo "checking if certificates need renewal at [$(date)] : container started at [$(stat -c "%z" /proc/1/cmdline)]"
     certbot renew \
         --rsa-key-size 4096 \
-        --pre-hook "pre_renewal_attempt.sh" \
-        --post-hook "post_renewal_attempt.sh" \
-        --renew-hook "renewed_certificates.sh"
+        --pre-hook "/assets/pre_renewal_attempt.sh" \
+        --post-hook "/assets/post_renewal_attempt.sh" \
+        --renew-hook "/assets/renewed_certificates.sh"
 }
 
 function is_our_server_available () {
-    curl --silent "http://${HOST_DOMAIN}/.well-known/.showme.html" | grep "available"
+    curl --silent "http://${HOST_DOMAIN}/.well-known/.showme.html" | grep "certbot-is-ready"
 }
 
 function wait_for_server_availability () {
@@ -93,7 +95,7 @@ function wait_for_server_availability () {
     until is_our_server_available; do
         sleep 30
         if ! is_our_server_available; then
-            printf '... still waiting for our server ...\n'
+            printf '... still waiting for our server @[%s] seconds...\n' "${SECONDS}"
         fi
     done
 }

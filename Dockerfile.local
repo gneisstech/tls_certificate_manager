@@ -6,6 +6,7 @@ ADD ./docker_assets/* /assets/
 WORKDIR /assets
 RUN apk add --no-cache bash curl && ./docker_install.sh
 
+ENV ACTIVE_TLS_PUBLISH='false'
 ENV ADMIN_EMAIL='techguru@byiq.com'
 ENV HOST_DOMAIN='cf.dev.atrius-iot.com'
 ENV RELEASE_NAMESPACE='cfk8s'
@@ -22,6 +23,7 @@ ENV CERTIFICATE_ORG='Acuity Brands, Inc.'
 ENV CERTIFICATE_NAME="${RELEASE_NAME}"
 ENV CERTIFICATE_DIR='/etc/letsencrypt'
 ENV DEV_CERTIFICATE_DIR="${CERTIFICATE_DIR}/dev-cert"
+ENV WEBROOT_DIR='/data/letsencrypt'
 
 ENV CERTIFICATE_CREATED_FLAG="${CERTIFICATE_DIR}/certificate_created.flag"
 ENV RENEWAL_FAILED_FLAG="${CERTIFICATE_DIR}/renewal_failed.flag"

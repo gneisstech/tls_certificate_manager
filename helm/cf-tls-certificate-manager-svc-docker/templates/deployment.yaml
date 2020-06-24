@@ -34,9 +34,8 @@ spec:
         - name: {{ default "fixme" .Values.certbot.protocol.volumeName | quote }}
           emptyDir: {}
         - name: {{ default "fixme" .Values.certbot.state.volumeName | quote }}
-          emptyDir: {}
-          #persistentVolumeClaim:
-          #  claimName: {{ default "fixme" .Values.certbot.state.volumeClaimName| quote }}
+          persistentVolumeClaim:
+            claimName: 'cf-az-files-certbot-state-pvc'
       initContainers:
         - name: '{{ .Chart.Name }}-init-www'
           securityContext:
@@ -203,7 +202,7 @@ spec:
             - '/assets/certbot_tls_publisher.sh'
           volumeMounts:
             # persistent state for certificate issuance
-            - name: {{ default "fixme" .Values.certbot.protocol.volumeName | quote }}
+            - name: {{ default "fixme" .Values.certbot.state.volumeName | quote }}
               mountPath: {{ "/etc/letsencrypt" | quote }}
           ports:
             - name: http

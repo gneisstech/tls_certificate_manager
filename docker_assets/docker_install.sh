@@ -64,10 +64,88 @@ function create_mount_points () {
     mkdir -p /data/letsencrypt
 }
 
+function retrieve_certbot () {
+    local -r certbot_version="${1}"
+    # Retrieve certbot code
+    mkdir -p src
+    wget -O "certbot-${certbot_version}.tar.gz" "https://github.com/certbot/certbot/archive/v${certbot_version}.tar.gz"
+    tar xf "certbot-${certbot_version}.tar.gz"
+    find .
+    cp "certbot-${certbot_version}/CHANGELOG.md" "certbot-${certbot_version}/README.rst" src/
+    cp "certbot-${certbot_version}/letsencrypt-auto-source/pieces/dependency-requirements.txt" .
+    cp "certbot-${certbot_version}/letsencrypt-auto-source/pieces/pipstrap.py" .
+    cp -r "certbot-${certbot_version}/tools" "tools"
+    cp -r "certbot-${certbot_version}/acme" "src/acme"
+    cp -r "certbot-${certbot_version}/certbot" "src/certbot"
+    rm -rf "certbot-${certbot_version}.tar.gz" "certbot-${certbot_version}"
+}
+
+function generate_constraints () {
+    # Generate constraints file to pin dependency versions
+    cat dependency-requirements.txt | tools/strip_hashes.py > unhashed_requirements.txt
+    cat tools/dev_constraints.txt unhashed_requirements.txt | tools/merge_requirements.py > docker_constraints.txt
+}
+
+function install_certbot_runtime_dependencies () {
+    # Install certbot runtime dependencies
+    apk add --no-cache --virtual .certbot-deps \
+        libffi \
+        libssl1.1 \
+        openssl \
+        ca-certificates \
+        binutils
+}
+
+function install_certbot_from_sources () {
+    # Install certbot from sources
+    apk add --no-cache --virtual .build-deps \
+        gcc \
+        linux-headers \
+        openssl-dev \
+        musl-dev \
+        libffi-dev
+    python pipstrap.py
+    pip install --upgrade pip
+    pip install -r dependency-requirements.txt
+    pip install --no-cache-dir --no-deps \
+        --editable src/acme \
+        --editable src/certbot
+    apk del .build-deps
+}
+
+function install_qemu () {
+    QEMU_ARCH="x86_64"
+    pushd /tmp
+        QEMU_DOWNLOAD_URL="https://github.com/multiarch/qemu-user-static/releases/download"
+        QEMU_LATEST_TAG="$(curl -s https://api.github.com/repos/multiarch/qemu-user-static/tags \
+            | grep 'name.*v[0-9]' \
+            | head -n 1 \
+            | cut -d '"' -f 4 || true)"
+        printf 'foo\n'
+        curl -SL "${QEMU_DOWNLOAD_URL}/${QEMU_LATEST_TAG}/x86_64_qemu-$QEMU_ARCH-static.tar.gz" \
+            | tar xzv
+        cp "qemu-${QEMU_ARCH}-static" /usr/bin
+    popd
+}
+
+function install_certbot () {
+    mkdir -p /opt/certbot && chmod 777 /opt/certbot
+    mkdir -p /etc/letsencrypt
+    mkdir -p /var/lib/letsencrypt
+    install_qemu
+    pushd /opt/certbot
+        retrieve_certbot '1.5.0'
+        generate_constraints
+        install_certbot_runtime_dependencies
+        install_certbot_from_sources
+    popd
+}
+
 function docker_install () {
     install_base_tools
     install_kubectl
     create_mount_points
+    install_certbot
 }
 
 docker_install

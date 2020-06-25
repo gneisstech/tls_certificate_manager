@@ -1,4 +1,4 @@
-FROM certbot/certbot:latest
+FROM amd64/python:3.8-alpine3.12
 LABEL maintainer="techguru@byiq.com"
 LABEL cloud-git-role="cloud-git-nginx-certbot"
 
@@ -33,5 +33,7 @@ ENV DEVELOPER_CERTIFICATE_REQUIRED_FLAG="${CERTIFICATE_DIR}/developer_certificat
 # this container will have many different entry point scripts available
 # the default script will simply output instructions for use
 #
+EXPOSE 80 443
+VOLUME /etc/letsencrypt /var/lib/letsencrypt
 ENTRYPOINT [ "/bin/bash" ]
 CMD [ "/assets/usage_hints_cf_tls_certificate_manager.sh" ]

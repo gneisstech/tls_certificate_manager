@@ -10,4 +10,4 @@ spec:
       storage: '10G'
   storageClassName: 'manual-certbot'
   volumeMode: 'Filesystem'
-  volumeName: 'cf-az-files-certbot-state-{{ .Release.Namespace }}-}pv'
+  volumeName: 'cf-az-files-certbot-state-{{ .Release.Namespace }}-pv'

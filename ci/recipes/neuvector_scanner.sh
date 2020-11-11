@@ -30,7 +30,7 @@ function show_cve_high () {
 
 function show_cve_medium () {
   local -r results_file="${1}"
-  cat "${results_file}" | jq '[.report.vulnerabilities[] | select(.severity == "High")]'
+  cat "${results_file}" | jq '[.report.vulnerabilities[] | select(.severity == "Medium")]'
 }
 
 function fail_cve_high () {

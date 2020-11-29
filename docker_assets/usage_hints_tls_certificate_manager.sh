@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# usage: usage_hints_cf_tls_certificate_manager.sh
+# usage: usage_hints_tls_certificate_manager.sh
 
 #
 # Maintainer: techguru@byiq.com
@@ -40,7 +40,7 @@ set -o pipefail
 # Arguments
 # ---------------------
 
-function usage_hints_cf_tls_certificate_manager () {
+function usage_hints_tls_certificate_manager () {
     printf 'USAGE: docker run {container_id} -- /assets/{entry_point}\n'
     printf '       where {entry_point} is any one of the following:\n'
     printf '          certbot_developer_certificate.sh\n'
@@ -59,4 +59,4 @@ function usage_hints_cf_tls_certificate_manager () {
     printf '          run_certbot_static_analysis.sh\n'
 }
 
-usage_hints_cf_tls_certificate_manager
+usage_hints_tls_certificate_manager

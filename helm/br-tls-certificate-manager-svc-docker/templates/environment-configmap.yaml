@@ -3,12 +3,12 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   labels:
-    app: {{ template "cf-tls-certificate-manager-svc-docker.name" . }}
-    chart: {{ template "cf-tls-certificate-manager-svc-docker.chart" . }}
-    component: "{{ template "cf-tls-certificate-manager-svc-docker.name" . }}"
+    app: {{ template "br-tls-certificate-manager-svc-docker.name" . }}
+    chart: {{ template "br-tls-certificate-manager-svc-docker.chart" . }}
+    component: "{{ template "br-tls-certificate-manager-svc-docker.name" . }}"
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-  name: {{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-env
+  name: {{ template "br-tls-certificate-manager-svc-docker.fullname" . }}-env
   annotations:
     checksum/environment: {{ tpl (toYaml .Values.config.environment) . | sha256sum }}
 data:

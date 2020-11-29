@@ -46,7 +46,7 @@ declare -rx PRIVATE_TLS
 function get_ingress_service () {
     kubectl --namespace "${RELEASE_NAMESPACE}" \
         get service \
-        -l "component=controller,app=cf-waf-ingress" \
+        -l "component=controller,app=br-waf-ingress" \
         -o json \
         2> /dev/null
 }

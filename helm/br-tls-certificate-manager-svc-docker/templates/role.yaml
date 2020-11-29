@@ -2,9 +2,9 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ include "cf-tls-certificate-manager-svc-docker.fullname" . }}
+  name: {{ include "br-tls-certificate-manager-svc-docker.fullname" . }}
   labels:
-    {{- include "cf-tls-certificate-manager-svc-docker.labels" . | nindent 4 }}
+    {{- include "br-tls-certificate-manager-svc-docker.labels" . | nindent 4 }}
 rules:
   - apiGroups:
       - ""

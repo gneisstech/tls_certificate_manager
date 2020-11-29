@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "cf-tls-certificate-manager-svc-docker.fullname" . }}
+  name: {{ include "br-tls-certificate-manager-svc-docker.fullname" . }}
   labels:
-    {{- include "cf-tls-certificate-manager-svc-docker.labels" . | nindent 4 }}
+    {{- include "br-tls-certificate-manager-svc-docker.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "cf-tls-certificate-manager-svc-docker.selectorLabels" . | nindent 6 }}
+      {{- include "br-tls-certificate-manager-svc-docker.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "cf-tls-certificate-manager-svc-docker.selectorLabels" . | nindent 8 }}
+        {{- include "br-tls-certificate-manager-svc-docker.selectorLabels" . | nindent 8 }}
       {{- if ( or .Values.config.environment .Values.config.secrets ) }}
       annotations:
         {{- if .Values.config.environment }}
@@ -27,7 +27,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-      serviceAccountName: {{ include "cf-tls-certificate-manager-svc-docker.serviceAccountName" . }}
+      serviceAccountName: {{ include "br-tls-certificate-manager-svc-docker.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
@@ -35,7 +35,7 @@ spec:
           emptyDir: {}
         - name: {{ default "fixme" .Values.certbot.state.volumeName | quote }}
           persistentVolumeClaim:
-            claimName: 'cf-az-files-certbot-state-pvc'
+            claimName: 'br-az-files-certbot-state-pvc'
       initContainers:
         - name: '{{ .Chart.Name }}-init-www'
           securityContext:
@@ -51,9 +51,9 @@ spec:
               value: "8125"
           envFrom:
             - configMapRef:
-                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-env'
+                name: '{{ template "br-tls-certificate-manager-svc-docker.fullname" . }}-env'
             - secretRef:
-                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-senv'
+                name: '{{ template "br-tls-certificate-manager-svc-docker.fullname" . }}-senv'
           command:
             - '/assets/certbot_init_www.sh'
           volumeMounts:
@@ -74,9 +74,9 @@ spec:
               value: "8125"
           envFrom:
             - configMapRef:
-                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-env'
+                name: '{{ template "br-tls-certificate-manager-svc-docker.fullname" . }}-env'
             - secretRef:
-                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-senv'
+                name: '{{ template "br-tls-certificate-manager-svc-docker.fullname" . }}-senv'
           command:
             - '/assets/certbot_developer_certificate.sh'
           volumeMounts:
@@ -97,9 +97,9 @@ spec:
               value: "8125"
           envFrom:
             - configMapRef:
-                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-env'
+                name: '{{ template "br-tls-certificate-manager-svc-docker.fullname" . }}-env'
             - secretRef:
-                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-senv'
+                name: '{{ template "br-tls-certificate-manager-svc-docker.fullname" . }}-senv'
           command:
             - '/assets/certbot_wait_for_loadbalancer.sh'
       containers:
@@ -117,9 +117,9 @@ spec:
               value: "8125"
           envFrom:
             - configMapRef:
-                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-env'
+                name: '{{ template "br-tls-certificate-manager-svc-docker.fullname" . }}-env'
             - secretRef:
-                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-senv'
+                name: '{{ template "br-tls-certificate-manager-svc-docker.fullname" . }}-senv'
           ports:
             - name: http
               containerPort: 80
@@ -153,9 +153,9 @@ spec:
               value: "8125"
           envFrom:
             - configMapRef:
-                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-env'
+                name: '{{ template "br-tls-certificate-manager-svc-docker.fullname" . }}-env'
             - secretRef:
-                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-senv'
+                name: '{{ template "br-tls-certificate-manager-svc-docker.fullname" . }}-senv'
           command:
             - '/assets/certbot_issuer_loop.sh'
           volumeMounts:
@@ -195,9 +195,9 @@ spec:
               value: "8125"
           envFrom:
             - configMapRef:
-                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-env'
+                name: '{{ template "br-tls-certificate-manager-svc-docker.fullname" . }}-env'
             - secretRef:
-                name: '{{ template "cf-tls-certificate-manager-svc-docker.fullname" . }}-senv'
+                name: '{{ template "br-tls-certificate-manager-svc-docker.fullname" . }}-senv'
           command:
             - '/assets/certbot_tls_publisher.sh'
           volumeMounts:

@@ -1,9 +1,9 @@
 apiVersion: v2
-name: 'cf-tls-certificate-manager-svc-docker'
+name: 'br-tls-certificate-manager-svc-docker'
 description: 'CF: tls certificate manager service'
 keywords:
   - 'connected-facilities'
-  - 'cf-tls-certificate-manager-svc'
+  - 'br-tls-certificate-manager-svc'
 type: application
 home: ''  # The URL of this projects home page (optional)
 sources: []  # A list of URLs to source code for this project (optional)

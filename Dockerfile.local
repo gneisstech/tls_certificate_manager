@@ -8,14 +8,14 @@ RUN apk add --no-cache bash curl && ./docker_install.sh
 
 ENV ACTIVE_TLS_PUBLISH='false'
 ENV ADMIN_EMAIL='techguru@byiq.com'
-ENV HOST_DOMAIN='cf.dev.atrius-iot.com'
-ENV RELEASE_NAMESPACE='cfk8s'
-ENV RELEASE_NAME='cf-dev'
+ENV HOST_DOMAIN='br.dev.atrius-iot.com'
+ENV RELEASE_NAMESPACE='brk8s'
+ENV RELEASE_NAME='br-dev'
 ENV PRIVATE_TLS='false'
 ENV TLS_PEM=''
 ENV STATSD_HOST='localhost'
 ENV STATSD_PORT='8125'
-ENV METRICS_PREFIX="cf.service.cf_tls_certificate_manager."
+ENV METRICS_PREFIX="br.service.br_tls_certificate_manager."
 ENV IS_PRODUCTION='false'
 ENV TLS_SECRET_NAME='waf-tls-secret'
 
@@ -34,4 +34,4 @@ ENV DEVELOPER_CERTIFICATE_REQUIRED_FLAG="${CERTIFICATE_DIR}/developer_certificat
 # the default script will simply output instructions for use
 #
 ENTRYPOINT [ "/bin/bash" ]
-CMD [ "/assets/usage_hints_cf_tls_certificate_manager.sh" ]
+CMD [ "/assets/usage_hints_tls_certificate_manager.sh" ]

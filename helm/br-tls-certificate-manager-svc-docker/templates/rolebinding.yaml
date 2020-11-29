@@ -1,0 +1,16 @@
+{{- if .Values.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "br-tls-certificate-manager-svc-docker.fullname" . }}
+  labels:
+    {{- include "br-tls-certificate-manager-svc-docker.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ template "br-tls-certificate-manager-svc-docker.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "br-tls-certificate-manager-svc-docker.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end -}}

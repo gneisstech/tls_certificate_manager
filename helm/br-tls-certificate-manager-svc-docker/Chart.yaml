@@ -2,7 +2,7 @@ apiVersion: v2
 name: 'br-tls-certificate-manager-svc-docker'
 description: 'CF: tls certificate manager service'
 keywords:
-  - 'connected-facilities'
+  - 'bedrock'
   - 'br-tls-certificate-manager-svc'
 type: application
 home: ''  # The URL of this projects home page (optional)

@@ -31,7 +31,7 @@ steps:
       scriptPath: './ci/recipes/sast.sh'
   - task: 'Docker@2'
     condition: and(succeeded(), ne(variables['Build.SourceVersionMessage'], 'automated update of semver on git commit'))
-    displayName: 'Build and push cf-tls-certificate-manager-svc docker container'
+    displayName: 'Build and push br-tls-certificate-manager-svc docker container'
     inputs:
       repository: '$(imageName)'
       command: 'buildAndPush'

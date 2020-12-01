@@ -39,6 +39,7 @@ set -o pipefail
 declare -rx HOST_DOMAIN
 declare -rx RELEASE_NAMESPACE
 declare -rx PRIVATE_TLS
+declare -rx INGRESS_APP
 
 # Arguments
 # ---------------------
@@ -46,7 +47,7 @@ declare -rx PRIVATE_TLS
 function get_ingress_service () {
     kubectl --namespace "${RELEASE_NAMESPACE}" \
         get service \
-        -l "component=controller,app=br-waf-ingress" \
+        -l "component=controller,app=${INGRESS_APP}" \
         -o json \
         2> /dev/null
 }

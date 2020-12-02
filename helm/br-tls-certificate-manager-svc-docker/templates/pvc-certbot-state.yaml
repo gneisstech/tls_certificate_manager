@@ -1,3 +1,4 @@
+{{- if .Values.certbot.pvc.create -}}
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -11,3 +12,4 @@ spec:
   storageClassName: 'manual-certbot-state'
   volumeMode: 'Filesystem'
   volumeName: 'br-az-files-certbot-state-{{ .Release.Namespace }}-pv'
+{{- end -}}

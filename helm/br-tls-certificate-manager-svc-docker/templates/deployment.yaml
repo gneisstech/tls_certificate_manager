@@ -35,7 +35,7 @@ spec:
           emptyDir: {}
         - name: {{ default "fixme" .Values.certbot.state.volumeName | quote }}
           persistentVolumeClaim:
-            claimName: 'br-az-files-certbot-state-pvc'
+            claimName: 'br-az-files-certbot-state-{{ .Release.Namespace }}-pvc'
       initContainers:
         - name: '{{ .Chart.Name }}-init-www'
           securityContext:

@@ -1,7 +1,7 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: 'br-az-files-certbot-state-{{ .Release.Namespace }}-spvc'
+  name: 'br-az-files-certbot-state-{{ .Release.Namespace }}-pvc'
 spec:
   accessModes:
     - ReadWriteMany

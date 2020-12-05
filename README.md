@@ -34,6 +34,7 @@ Issue Tracker: https://gitlab.com/acuitytech/tls_certificate_manager/-/issues
 # Copyright (c) 2016-2017, techguru@byiq.com
 # Copyright (c) 2017-2019, Cloud Scaling
 # Copyright (c) 2019-2020, Acuity Brands Lighting Inc.
+# Copyright (c) 2020-, Gneiss Technology LLC.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal

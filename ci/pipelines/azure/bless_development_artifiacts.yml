@@ -46,7 +46,7 @@ steps:
       command: 'login'
       containerRegistry: 'br-dev-acr-service-connection'
   - task: 'DownloadSecureFile@1'
-    condition: and(succeeded(), ne(variables['Build.SourceVersionMessage'], 'automated update of semver on git commit'))
+    condition: and(false, succeeded(), ne(variables['Build.SourceVersionMessage'], 'automated update of semver on git commit'))
     name: neuvectorLicense
     displayName: Get NeuVector license
     inputs:

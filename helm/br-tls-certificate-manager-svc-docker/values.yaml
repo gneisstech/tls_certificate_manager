@@ -38,6 +38,8 @@ config:
     TLS_PEM: ''
 
 certbot:
+  pvc:
+    create: false
   protocol:
     volumeName: 'certbot-protocol'
   state:

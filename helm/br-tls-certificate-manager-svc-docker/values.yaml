@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: 'cfdevregistry.azurecr.io/br-tls-certificate-manager-svc-docker'
+  repository: 'brdevregistry.azurecr.io/br-tls-certificate-manager-svc-docker'
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
